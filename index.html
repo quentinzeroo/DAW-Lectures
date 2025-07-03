@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lectures</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    .week { margin-bottom: 40px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    .item { border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
+    img { max-width: 100%; }
+  </style>
+</head>
+<body>
+  <h1>Lectures</h1>
+  <div id="weeks"></div>
+
+  <script>
+    // Auto-load folders (GitHub Pages)
+    const weeks = ['week1', 'week2']; // Add your folders here
+    weeks.forEach(week => {
+      document.getElementById('weeks').innerHTML += `
+        <div class="week">
+          <h2>${week}</h2>
+          <div class="grid" id="${week}"></div>
+        </div>
+      `;
+      fetch(`lectures/${week}/`)
+        .then(r => r.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const links = [...doc.querySelectorAll('a')]
+            .filter(a => !a.href.includes('/'));
+          links.forEach(file => {
+            const ext = file.href.split('.').pop();
+            const el = document.createElement('div');
+            el.className = 'item';
+            if (ext.match(/jpg|png|gif/)) {
+              el.innerHTML = `<img src="lectures/${week}/${file.href}">`;
+            } else if (ext === 'txt') {
+              el.innerHTML = `<a href="lectures/${week}/${file.href}" target="_blank">📝 ${file.href}</a>`;
+            } else if (ext === 'mp4') {
+              el.innerHTML = `<video controls src="lectures/${week}/${file.href}" style="max-width:100%;"></video>`;
+            }
+            document.getElementById(week).appendChild(el);
+          });
+        });
+    });
+  </script>
+</body>
+</html>
